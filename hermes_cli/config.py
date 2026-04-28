@@ -410,6 +410,16 @@ DEFAULT_CONFIG = {
         # (60+ tool iterations with tiny output) before users assume the
         # bot is dead and /restart.
         "gateway_notify_interval": 180,
+        # Auto-update configuration for hermes-agent.
+        # When enabled, the gateway can automatically check for and apply
+        # updates from the official NousResearch/hermes-agent repository.
+        # Fork detection is automatic - updates are skipped on forks.
+        "auto_update": {
+            "enabled": False,
+            "mode": "notify",  # "notify" = tell user, "apply" = auto-apply
+            "check_interval": "24h",  # 1h, 6h, 12h, 24h, 48h, 72h
+            "grace_period_seconds": 300,  # minimum 5 min between auto-updates
+        },
         # How user-attached images are presented to the main model on each turn.
         #   "auto"   — attach natively when the active model reports
         #              supports_vision=True AND the user hasn't explicitly

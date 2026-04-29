@@ -1052,12 +1052,11 @@ def _resolve_api_key_provider() -> Tuple[Optional[OpenAI], Optional[str]]:
             if not api_key:
                 continue
 
-            base_url = _to_openai_base_url(
-                _pool_runtime_base_url(entry, pconfig.inference_base_url) or pconfig.inference_base_url
-            )
+            provider_url = _pool_runtime_base_url(entry, pconfig.inference_base_url) or pconfig.inference_base_url
+            base_url = _to_openai_base_url(provider_url)
             model = _API_KEY_PROVIDER_AUX_MODELS.get(provider_id)
             if model is None:
-                continue  # skip provider if we don't know a valid aux model
+                continue
             logger.debug("Auxiliary text client: %s (%s) via pool", pconfig.name, model)
             if provider_id == "gemini":
                 from agent.gemini_native_adapter import GeminiNativeClient, is_native_gemini_base_url
@@ -1072,7 +1071,7 @@ def _resolve_api_key_provider() -> Tuple[Optional[OpenAI], Optional[str]]:
 
                 extra["default_headers"] = copilot_default_headers()
             _client = OpenAI(api_key=api_key, base_url=base_url, **extra)
-            _client = _maybe_wrap_anthropic(_client, model, api_key, base_url)
+            _client = _maybe_wrap_anthropic(_client, model, api_key, provider_url)
             return _client, model
 
         creds = resolve_api_key_provider_credentials(provider_id)
@@ -1080,12 +1079,11 @@ def _resolve_api_key_provider() -> Tuple[Optional[OpenAI], Optional[str]]:
         if not api_key:
             continue
 
-        base_url = _to_openai_base_url(
-            str(creds.get("base_url", "")).strip().rstrip("/") or pconfig.inference_base_url
-        )
+        provider_url = str(creds.get("base_url", "")).strip().rstrip("/") or pconfig.inference_base_url
+        base_url = _to_openai_base_url(provider_url)
         model = _API_KEY_PROVIDER_AUX_MODELS.get(provider_id)
         if model is None:
-            continue  # skip provider if we don't know a valid aux model
+            continue
         logger.debug("Auxiliary text client: %s (%s)", pconfig.name, model)
         if provider_id == "gemini":
             from agent.gemini_native_adapter import GeminiNativeClient, is_native_gemini_base_url
@@ -1100,7 +1098,7 @@ def _resolve_api_key_provider() -> Tuple[Optional[OpenAI], Optional[str]]:
 
             extra["default_headers"] = copilot_default_headers()
         _client = OpenAI(api_key=api_key, base_url=base_url, **extra)
-        _client = _maybe_wrap_anthropic(_client, model, api_key, base_url)
+        _client = _maybe_wrap_anthropic(_client, model, api_key, provider_url)
         return _client, model
 
     return None, None
